@@ -49,3 +49,4 @@ Screentshot - Nginx Virtual Host Creator Result
 ## RoadMap
  - Support multiple applications (Magento 1, WordPress etc.)
  - Option to configure virtual host template from separate file.
+ - Option to add SSL configuration
