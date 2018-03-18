@@ -40,10 +40,10 @@ sudo ./vhost-nginx.sh --domain=magento223ce.local --app=magento2 --root-dir=/var
  - In case of system-wide command, you can omit the `--root-dir` parameter if you run the command from the root directory of application. 
 
 ## Screenshots
-![Nginx Virtual Host Creator Help](https://github.com/MagePsycho/magento2-installer-bash-script/raw/master/docs/nginx-virtual-host-bash-script-help.png "Nginx Virtual Host Creator Help")
+![Nginx Virtual Host Creator Help](https://github.com/MagePsycho/nginx-virtual-host-bash-script/raw/master/docs/nginx-virtual-host-bash-script-help.png "Nginx Virtual Host Creator Help")
 Screentshot - Nginx Virtual Host Creator Help
 
-![Nginx Virtual Host Creator Result](https://github.com/MagePsycho/magento2-installer-bash-script/raw/master/docs/nginx-virtual-host-bash-script-result.png "Nginx Virtual Host Creator Result")
+![Nginx Virtual Host Creator Result](https://github.com/MagePsycho/nginx-virtual-host-bash-script/raw/master/docs/nginx-virtual-host-bash-script-result.png "Nginx Virtual Host Creator Result")
 Screentshot - Nginx Virtual Host Creator Result
 
 ## RoadMap
