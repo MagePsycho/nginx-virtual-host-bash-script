@@ -4,7 +4,7 @@ This Script creates Nginx virtual host for different applications.
 Supported Applications:
  - ~~Magento 1~~
  - Magento 2
- - ~~WordPress~~
+ - WordPress
  - ~~Others~~
 
 
@@ -36,6 +36,11 @@ sudo ./vhost-nginx.sh --help
 sudo ./vhost-nginx.sh --domain=magento223ce.local --app=magento2 --root-dir=/var/www/magento2/magento223ce
 ```
 
+### To Create Virtual Host for WordPress
+```
+sudo ./vhost-nginx.sh --domain=wordpress494.local --app=wordpress --root-dir=/var/www/wordpress/wordpress494
+```
+
 **Notes**
  - In case of system-wide command, you can omit the `--root-dir` parameter if you run the command from the root directory of application. 
 
@@ -47,6 +52,6 @@ Screentshot - Nginx Virtual Host Creator Help
 Screentshot - Nginx Virtual Host Creator Result
 
 ## RoadMap
- - Support multiple applications (Magento 1, WordPress etc.)
+ - Support multiple applications (Magento 1, ~~WordPress~~ etc.)
  - Option to configure virtual host template from separate file.
  - Option to add SSL configuration

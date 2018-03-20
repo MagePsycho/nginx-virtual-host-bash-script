@@ -200,12 +200,12 @@ Version $VERSION
     Options:
         --domain                    Server Name
         --root-dir                  Application Root Directory. Default: current (pwd)
-        --app                       Application Name (default, magento, magento2 & wordpress). Default: default
+        --app                       Application Name (magento2|wordpress).
         -d, --debug                 Run command in debug mode
         -h, --help                  Display this help and exit
 
     Examples:
-        $(basename "$0") --domain=... [--root-dir=...] [--app=...] [--debug]
+        $(basename "$0") --domain=... --app=... [--root-dir=...] [--debug]
 
 "
     _printPoweredBy
@@ -249,7 +249,6 @@ function initDefaultArgs()
     VHOST_ROOT_DIR=$(pwd)
     NGINX_SITES_ENABLED_FILE=
     NGINX_SITES_AVAILABLE_FILE=
-    APP_TYPE='default'
 
     if _isOsMac; then
         NGINX_SITES_ENABLED_DIR='/usr/local/etc/nginx/sites-enabled'
@@ -264,11 +263,19 @@ function validateArgs()
 {
     ERROR_COUNT=0
     if [[ -z "$VHOST_DOMAIN" ]]; then
-        _error "--domain parameter is missing."
+        _error "--domain=... parameter is missing."
+        ERROR_COUNT=$((ERROR_COUNT + 1))
+    fi
+    if [[ -z "$APP_TYPE" ]]; then
+        _error "--app=... parameter is missing."
+        ERROR_COUNT=$((ERROR_COUNT + 1))
+    fi
+    if [[ ! -z "$APP_TYPE" && "$APP_TYPE" != @(magento2|wordpress) ]]; then
+        _error "Please enter valid application name for --app=... parameter(magento2|wordpress)."
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
     if [[ ! -d "$VHOST_ROOT_DIR" ]]; then
-        _error "--root-dir parameter is not valid."
+        _error "--root-dir =...parameter is not valid."
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
     if [[ ! -d "$NGINX_SITES_ENABLED_DIR" ]]; then
@@ -327,27 +334,27 @@ function checkCmdDependencies()
     done;
 }
 
-function createDefaultVhost()
+function createVirtualHost()
 {
-    #@todo implementation
-    _die "Vhost for default application not supported yet. Please specify correct --app=... parameter."
-}
+    # @todo magento | default
 
-function createMagento2Vhost()
-{
-    _arrow "Vhost creation for Nginx started..."
+    _arrow "Virtual host creation for Nginx started..."
 
     _arrow "Changing current working directory to ${VHOST_ROOT_DIR}..."
     cd "$VHOST_ROOT_DIR" || _die "Couldn't change current working directory to : ${VHOST_ROOT_DIR}."
     _success "Done"
 
-    _arrow "Verifying the current directory is Magento2..."
-    verifyCurrentDirIsMage2Root
+    # Verify the current directory as per application
+    _arrow "Verifying the current directory is root of ${APP_TYPE}..."
+    verifyCurrentDirIsAppRoot
     _success "Done"
 
+    # Prepare virtual host content as per application
+    # @todo move it to template based
+    # @todo add option for https
     _arrow "Creating Nginx Vhost File..."
     prepareVhostFilePaths
-    prepareM2VhostContent
+    prepareAppVhostContent
     createVhostSymlinks
     _success "Done"
 
@@ -362,10 +369,32 @@ function createMagento2Vhost()
     _success "Done"
 }
 
+function createDefaultVhost()
+{
+    #@todo implementation
+    _die "Vhost for default application not supported yet. Please specify correct --app=... parameter."
+}
+
+function verifyCurrentDirIsAppRoot()
+{
+    if [[ "$APP_TYPE" = 'magento2' ]]; then
+        verifyCurrentDirIsMage2Root
+    elif [[ "$APP_TYPE" = 'wordpress' ]]; then
+        verifyCurrentDirIsWpRoot
+    fi
+}
+
 function verifyCurrentDirIsMage2Root()
 {
     if [[ ! -f './bin/magento' ]] || [[ ! -f './app/etc/di.xml' ]]; then
         _die "Current directory is not Magento2 root. Please specify correct --root-dir=... parameter if you are running command from different directory."
+    fi
+}
+
+function verifyCurrentDirIsWpRoot()
+{
+    if [[ ! -f './wp-config.php' ]]; then
+        _die "Current directory is not WordPress root. Please specify correct --root-dir=... parameter if you are running command from different directory."
     fi
 }
 
@@ -375,17 +404,23 @@ function prepareVhostFilePaths()
     NGINX_SITES_AVAILABLE_FILE="${NGINX_SITES_AVAILABLE_DIR}/${VHOST_DOMAIN}.conf"
 }
 
+function prepareAppVhostContent()
+{
+    if [[ "$APP_TYPE" = 'magento2' ]]; then
+        prepareM2VhostContent
+    elif [[ "$APP_TYPE" = 'wordpress' ]]; then
+        prepareWpVhostContent
+    fi
+}
+
 function prepareM2VhostContent()
 {
-    local _mage2NginxFile=
+    local _nginxFile=
     if [[ -f "${VHOST_ROOT_DIR}/nginx.conf" ]]; then
-        _mage2NginxFile="${VHOST_ROOT_DIR}/nginx.conf"
+        _nginxFile="${VHOST_ROOT_DIR}/nginx.conf"
     else
-        _mage2NginxFile="${VHOST_ROOT_DIR}/nginx.conf.sample"
+        _nginxFile="${VHOST_ROOT_DIR}/nginx.conf.sample"
     fi
-
-    # @todo move it to template based
-    # @todo add option for https
 
     echo "#Magento Vars
 #set \$MAGE_ROOT ${VHOST_ROOT_DIR};
@@ -400,12 +435,49 @@ function prepareM2VhostContent()
 #}
 server {
     listen 80;
-    server_name $VHOST_DOMAIN;
+    server_name ${VHOST_DOMAIN};
     set \$MAGE_ROOT ${VHOST_ROOT_DIR};
     set \$MAGE_MODE developer;
-    include ${_mage2NginxFile};
+    include ${_nginxFile};
 }
 " > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
+    _arrow "${NGINX_SITES_AVAILABLE_FILE} file has been created."
+}
+
+function prepareWpVhostContent()
+{
+    echo "server {
+    listen 80;
+    server_name ${VHOST_DOMAIN};
+    root ${VHOST_ROOT_DIR};
+
+    location / {
+        index index.html index.php;
+        try_files \$uri \$uri/ /index.php?\$args;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+        expires max;
+        log_not_found off;
+    }
+
+    ## Disable .htaccess and other hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    location ~ \.php$ {
+        if (!-e \$request_filename) { rewrite / /index.php last; } ## Catch 404s that try_files miss
+
+        # expires        off; ## Do not cache dynamic content
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+        include        fastcgi_params;
+        fastcgi_read_timeout 300;
+    }
+}" > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
 
     _arrow "${NGINX_SITES_AVAILABLE_FILE} file has been created."
 }
@@ -465,24 +537,16 @@ VERSION="0.1.0"
 function main()
 {
     _checkRootUser
-
     checkCmdDependencies
 
     [[ $# -lt 1 ]] && _printUsage
 
     initDefaultArgs
-
     processArgs "$@"
 
-    # @todo wordpress | magento | default
-    if [[ "$APP_TYPE" = 'magento2' ]]; then
-        createMagento2Vhost
-    else
-        createDefaultVhost
-    fi
+    createVirtualHost
 
     printSuccessMessage
-
     exit 0
 }
 
