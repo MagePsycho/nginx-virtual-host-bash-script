@@ -5,7 +5,7 @@
 #
 # @author   Raj KB <magepsycho@gmail.com>
 # @website  http://www.magepsycho.com
-# @version  0.1.1
+# @version  0.1.2
 
 # UnComment it if bash is lower than 4.x version
 shopt -s extglob
@@ -381,6 +381,8 @@ function verifyCurrentDirIsAppRoot()
         verifyCurrentDirIsMage2Root
     elif [[ "$APP_TYPE" = 'wordpress' ]]; then
         verifyCurrentDirIsWpRoot
+    elif [[ "$APP_TYPE" = 'laravel' ]]; then
+        verifyCurrentDirIsLaravelRoot
     fi
 }
 
@@ -398,6 +400,13 @@ function verifyCurrentDirIsWpRoot()
     fi
 }
 
+function verifyCurrentDirIsLaravelRoot()
+{
+    if [[ ! -f './bootstrap/app.php' ]]; then
+        _die "Current directory is not Laravel root. Please specify correct --root-dir=... parameter if you are running command from different directory."
+    fi
+}
+
 function prepareVhostFilePaths()
 {
     NGINX_SITES_ENABLED_FILE="${NGINX_SITES_ENABLED_DIR}/${VHOST_DOMAIN}.conf"
@@ -410,6 +419,8 @@ function prepareAppVhostContent()
         prepareM2VhostContent
     elif [[ "$APP_TYPE" = 'wordpress' ]]; then
         prepareWpVhostContent
+    elif [[ "$APP_TYPE" = 'laravel' ]]; then
+        prepareLaravelVhostContent
     fi
 }
 
@@ -473,11 +484,44 @@ function prepareWpVhostContent()
 
         # expires        off; ## Do not cache dynamic content
         fastcgi_pass   127.0.0.1:9000;
-        fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+        fastcgi_param  SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include        fastcgi_params;
         fastcgi_read_timeout 300;
     }
 }" > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
+
+    _arrow "${NGINX_SITES_AVAILABLE_FILE} file has been created."
+}
+
+function prepareLaravelVhostContent()
+{
+    echo "server {
+     listen 80;
+     listen [::]:80 ipv6only=on;
+
+     # Log files for Debugging
+     #access_log /var/log/nginx/${VHOST_DOMAIN}.access.log;
+     #error_log /var/log/nginx/${VHOST_DOMAIN}.error.log;
+
+     # Web root Directory for Laravel project
+     root ${VHOST_ROOT_DIR};
+     index index.php index.html index.htm;
+     server_name ${VHOST_DOMAIN};
+
+     location / {
+         try_files \$uri \$uri/ /index.php?\$query_string;
+     }
+
+     # PHP-FPM Configuration Nginx
+     location ~ \.php$ {
+         try_files \$uri =404;
+         fastcgi_split_path_info ^(.+\.php)(/.+)$;
+         fastcgi_pass 127.0.0.1:9000;;
+         fastcgi_index index.php;
+         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+         include fastcgi_params;
+     }
+ }" > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
 
     _arrow "${NGINX_SITES_AVAILABLE_FILE} file has been created."
 }
@@ -532,7 +576,7 @@ export LANG=C
 
 DEBUG=0
 _debug set -x
-VERSION="0.1.1"
+VERSION="0.1.2"
 
 function main()
 {

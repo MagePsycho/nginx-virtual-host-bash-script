@@ -1,10 +1,11 @@
-# Nginx Virtual Host Creator (Magento 1, Magento 2, WordPress)
+# Nginx Virtual Host Creator (Magento 1, Magento 2, Laravel, WordPress)
 
-This Script creates Nginx virtual host for different applications.
-Supported Applications:
+This Script creates Nginx virtual host for different applications.  
+Some of the supported applications are:  
  - ~~Magento 1~~
  - Magento 2
  - WordPress
+ - Laravel
  - ~~Others~~
 
 
@@ -52,6 +53,12 @@ Screentshot - Nginx Virtual Host Creator Help
 Screentshot - Nginx Virtual Host Creator Result
 
 ## RoadMap
- - Support multiple applications (Magento 1, ~~WordPress~~ etc.)
- - Option to configure virtual host template from separate file.
- - Option to add SSL configuration
+ - [ ] To Support multiple applications:
+    - [ x ] WordPress
+    - [ x ] Laravel
+    - [ ] Magento 1
+    - etc.
+ - [ ] Flexible settings for Nginx 
+    - fastcgi_pass: tcp port (127.0.0.1:9000) or unix socket (/var/run/php-fpm.sock)
+ - [ ] Option to configure virtual host template from separate file.
+ - [ ] Option to add SSL configuration
