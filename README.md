@@ -42,6 +42,11 @@ sudo ./vhost-nginx.sh --domain=magento223ce.local --app=magento2 --root-dir=/var
 sudo ./vhost-nginx.sh --domain=wordpress494.local --app=wordpress --root-dir=/var/www/wordpress/wordpress494
 ```
 
+### To Create Virtual Host for Laravel
+```
+sudo ./vhost-nginx.sh --domain=laravel560.local --app=laravel --root-dir=/var/www/laravel/laravel560
+```
+
 **Notes**
  - In case of system-wide command, you can omit the `--root-dir` parameter if you run the command from the root directory of application. 
 
