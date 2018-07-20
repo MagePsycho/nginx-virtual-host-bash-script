@@ -2,7 +2,7 @@
 
 This Script creates Nginx virtual host for different applications.  
 Some of the supported applications are:  
- - ~~Magento 1~~
+ - Magento 1
  - Magento 2
  - WordPress
  - Laravel
@@ -30,6 +30,10 @@ Make sure your `$HOME/bin` folder is in executable path
 ### To display help
 ```
 sudo ./vhost-nginx.sh --help
+```
+### To Create Virtual Host for Magento 1
+```
+sudo ./vhost-nginx.sh --domain=magento1938.local --app=magento1 --root-dir=/var/www/magento1/magento1938
 ```
 
 ### To Create Virtual Host for Magento 2
@@ -59,9 +63,12 @@ Screentshot - Nginx Virtual Host Creator Result
 
 ## RoadMap
  - [ ] To Support multiple applications:
+    - [ x ] Magento 1
+    - [ x ] Magento 2
     - [ x ] WordPress
-    - [ x ] Laravel
-    - [ ] Magento 1
+    - [ x ] Laravel    
+    - [  ] OroCrm    
+    - [  ] OroCommerce    
     - etc.
  - [ ] Flexible settings for Nginx 
     - fastcgi_pass: tcp port (127.0.0.1:9000) or unix socket (/var/run/php-fpm.sock)

@@ -5,7 +5,7 @@
 #
 # @author   Raj KB <magepsycho@gmail.com>
 # @website  http://www.magepsycho.com
-# @version  0.1.2
+# @version  1.2.0
 
 # UnComment it if bash is lower than 4.x version
 shopt -s extglob
@@ -200,7 +200,7 @@ Version $VERSION
     Options:
         --domain                    Server Name
         --root-dir                  Application Root Directory. Default: current (pwd)
-        --app                       Application Name (magento2|wordpress).
+        --app                       Application Name (magento1|magento2|wordpress|laravel).
         -d, --debug                 Run command in debug mode
         -h, --help                  Display this help and exit
 
@@ -270,7 +270,7 @@ function validateArgs()
         _error "--app=... parameter is missing."
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
-    if [[ ! -z "$APP_TYPE" && "$APP_TYPE" != @(magento2|wordpress) ]]; then
+    if [[ ! -z "$APP_TYPE" && "$APP_TYPE" != @(magento1|magento2|wordpress|laravel) ]]; then
         _error "Please enter valid application name for --app=... parameter(magento2|wordpress)."
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
@@ -379,6 +379,8 @@ function verifyCurrentDirIsAppRoot()
 {
     if [[ "$APP_TYPE" = 'magento2' ]]; then
         verifyCurrentDirIsMage2Root
+    elif [[ "$APP_TYPE" = 'magento1' ]]; then
+        verifyCurrentDirIsMage1Root
     elif [[ "$APP_TYPE" = 'wordpress' ]]; then
         verifyCurrentDirIsWpRoot
     elif [[ "$APP_TYPE" = 'laravel' ]]; then
@@ -390,6 +392,13 @@ function verifyCurrentDirIsMage2Root()
 {
     if [[ ! -f './bin/magento' ]] || [[ ! -f './app/etc/di.xml' ]]; then
         _die "Current directory is not Magento2 root. Please specify correct --root-dir=... parameter if you are running command from different directory."
+    fi
+}
+
+function verifyCurrentDirIsMage1Root()
+{
+    if [[ ! -f './mage' ]] || [[ ! -f './app/etc/local.xml' ]]; then
+        _die "Current directory is not Magento1 root. Please specify correct --root-dir=... parameter if you are running command from different directory."
     fi
 }
 
@@ -417,11 +426,83 @@ function prepareAppVhostContent()
 {
     if [[ "$APP_TYPE" = 'magento2' ]]; then
         prepareM2VhostContent
+    elif [[ "$APP_TYPE" = 'magento1' ]]; then
+        prepareM1VhostContent
     elif [[ "$APP_TYPE" = 'wordpress' ]]; then
         prepareWpVhostContent
     elif [[ "$APP_TYPE" = 'laravel' ]]; then
         prepareLaravelVhostContent
     fi
+}
+
+function prepareM1VhostContent()
+{
+    echo "server {
+	listen 80;
+    server_name ${VHOST_DOMAIN};
+    root ${VHOST_ROOT_DIR};
+
+    location / {
+        index index.html index.php; ## Allow a static html file to be shown first
+        try_files \$uri \$uri/ @handler; ## If missing pass the URI to Magento's front handler
+        expires 30d; ## Assume all files are cachable
+    }
+
+    # add this for yii else css js will not be picked up
+    location ~ \.(js|css|png|jpg|gif|swf|ico|pdf|mov|fla|zip|rar)$ {
+        try_files \$uri =404;
+    }
+
+    ## These locations would be hidden by .htaccess normally
+    location /app/                { deny all; }
+    location /includes/           { deny all; }
+    location /lib/                { deny all; }
+    location /media/downloadable/ { deny all; }
+    location /pkginfo/            { deny all; }
+    location /report/config.xml   { deny all; }
+    location /var/                { deny all; }
+
+    ## Disable .htaccess and other hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    location @handler { ## Magento uses a common front handler
+        rewrite / /index.php;
+    }
+
+    location ~ \.php/ { ## Forward paths like /js/index.php/x.js to relevant handler
+        rewrite ^(.*\.php)/ \$1 last;
+    }
+
+    location ~ \.php$ { ## Execute PHP scripts
+        if (!-e \$request_filename) { rewrite / /index.php last; } ## Catch 404s that try_files miss
+
+        # expires        off; ## Do not cache dynamic content
+        fastcgi_pass   127.0.0.1:9000;
+        # fastcgi_param  HTTPS \$fastcgi_https;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+
+        fastcgi_param PHP_VALUE  \"display_startup_errors=on\";
+        fastcgi_param PHP_VALUE  \"display_errors=on\";
+        fastcgi_param PHP_VALUE  \"html_errors=on\";
+        fastcgi_param PHP_VALUE  \"log_errors=on\";
+        fastcgi_param PHP_VALUE  \"error_log=${VHOST_ROOT_DIR}/var/log/system.log\";
+        fastcgi_param PHP_VALUE  \"xdebug.show_exception_trace=0\";
+
+        #fastcgi_param  MAGE_RUN_CODE default;
+        #fastcgi_param  MAGE_RUN_TYPE store;
+        fastcgi_param  MAGE_IS_DEVELOPER_MODE true;
+
+        include        fastcgi_params;
+        fastcgi_read_timeout 300;
+    }
+}
+" > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
+    _arrow "${NGINX_SITES_AVAILABLE_FILE} file has been created."
 }
 
 function prepareM2VhostContent()
@@ -576,7 +657,7 @@ export LANG=C
 
 DEBUG=0
 _debug set -x
-VERSION="0.1.2"
+VERSION="1.2.0"
 
 function main()
 {
