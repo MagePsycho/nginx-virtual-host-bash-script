@@ -63,10 +63,10 @@ Screentshot - Nginx Virtual Host Creator Result
 
 ## RoadMap
  - [ ] To Support multiple applications:
-    - [ x ] Magento 1
-    - [ x ] Magento 2
-    - [ x ] WordPress
-    - [ x ] Laravel    
+    - [x] Magento 1
+    - [x] Magento 2
+    - [x] WordPress
+    - [x] Laravel    
     - [  ] OroCrm    
     - [  ] OroCommerce    
     - etc.
