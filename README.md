@@ -67,8 +67,8 @@ Screentshot - Nginx Virtual Host Creator Result
     - [x] Magento 2
     - [x] WordPress
     - [x] Laravel    
-    - [  ] OroCrm    
-    - [  ] OroCommerce    
+    - [ ] OroCrm    
+    - [ ] OroCommerce    
     - etc.
  - [ ] Flexible settings for Nginx 
     - fastcgi_pass: tcp port (127.0.0.1:9000) or unix socket (/var/run/php-fpm.sock)
