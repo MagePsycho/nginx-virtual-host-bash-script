@@ -20,7 +20,8 @@ To make it system wide command
 ```
 sudo mv vhost-nginx.sh /usr/local/bin/vhost-nginx
 ```
-OR 
+OR  
+(may not work with `sudo`)
 ```
 mv vhost-nginx.sh ~/bin/vhost-nginx
 ```
