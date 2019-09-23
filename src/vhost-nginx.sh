@@ -200,7 +200,7 @@ Version $VERSION
     Options:
         --domain                    Server Name
         --root-dir                  Application Root Directory. Default: current (pwd)
-        --app                       Application Name (magento1|magento2|wordpress|laravel).
+        --app                       Application Name (magento1|magento2|wordpress|laravel|default).
         -d, --debug                 Run command in debug mode
         -h, --help                  Display this help and exit
 
@@ -270,8 +270,8 @@ function validateArgs()
         _error "--app=... parameter is missing."
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
-    if [[ ! -z "$APP_TYPE" && "$APP_TYPE" != @(magento1|magento2|wordpress|laravel) ]]; then
-        _error "Please enter valid application name for --app=... parameter(magento2|wordpress)."
+    if [[ ! -z "$APP_TYPE" && "$APP_TYPE" != @(magento1|magento2|wordpress|laravel|default) ]]; then
+        _error "Please enter valid application name for --app=... parameter(magento1|magento2|wordpress|laravel|default)."
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
     if [[ ! -d "$VHOST_ROOT_DIR" ]]; then

@@ -6,6 +6,7 @@ Some of the supported applications are:
  - Magento 2
  - WordPress
  - Laravel
+ - Html
  - ~~Others~~
 
 
@@ -34,22 +35,27 @@ sudo ./vhost-nginx.sh --help
 ```
 ### To Create Virtual Host for Magento 1
 ```
-sudo ./vhost-nginx.sh --domain=magento1938.local --app=magento1 --root-dir=/var/www/magento1/magento1938
+sudo ./vhost-nginx.sh --domain=magento1938.test --app=magento1 --root-dir=/var/www/magento1/magento1938
 ```
 
 ### To Create Virtual Host for Magento 2
 ```
-sudo ./vhost-nginx.sh --domain=magento223ce.local --app=magento2 --root-dir=/var/www/magento2/magento223ce
+sudo ./vhost-nginx.sh --domain=magento223ce.test --app=magento2 --root-dir=/var/www/magento2/magento223ce
 ```
 
 ### To Create Virtual Host for WordPress
 ```
-sudo ./vhost-nginx.sh --domain=wordpress494.local --app=wordpress --root-dir=/var/www/wordpress/wordpress494
+sudo ./vhost-nginx.sh --domain=wordpress494.test --app=wordpress --root-dir=/var/www/wordpress/wordpress494
 ```
 
 ### To Create Virtual Host for Laravel
 ```
-sudo ./vhost-nginx.sh --domain=laravel560.local --app=laravel --root-dir=/var/www/laravel/laravel560
+sudo ./vhost-nginx.sh --domain=laravel560.test --app=laravel --root-dir=/var/www/laravel/laravel560
+```
+
+### To Create Virtual Host for Default (Html)
+```
+sudo ./vhost-nginx.sh --domain=website.test --app=laravel --root-dir=/var/www/html/website
 ```
 
 **Notes**
@@ -68,6 +74,7 @@ Screentshot - Nginx Virtual Host Creator Result
     - [x] Magento 2
     - [x] WordPress
     - [x] Laravel    
+    - [x] Html    
     - [ ] OroCrm    
     - [ ] OroCommerce    
     - etc.
