@@ -432,6 +432,8 @@ function prepareAppVhostContent()
         prepareWpVhostContent
     elif [[ "$APP_TYPE" = 'laravel' ]]; then
         prepareLaravelVhostContent
+    elif [[ "$APP_TYPE" = 'default' ]]; then
+        prepareDefaultVhostContent
     fi
 }
 
@@ -601,6 +603,29 @@ function prepareLaravelVhostContent()
          fastcgi_index index.php;
          fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
          include fastcgi_params;
+     }
+ }" > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
+
+    _arrow "${NGINX_SITES_AVAILABLE_FILE} file has been created."
+}
+
+function prepareDefaultVhostContent()
+{
+    echo "server {
+     listen 80;
+     listen [::]:80 ipv6only=on;
+
+     # Log files for Debugging
+     #access_log /var/log/nginx/${VHOST_DOMAIN}.access.log;
+     #error_log /var/log/nginx/${VHOST_DOMAIN}.error.log;
+
+     # Web root Directory for Laravel project
+     root ${VHOST_ROOT_DIR};
+     index index.html index.htm;
+     server_name ${VHOST_DOMAIN};
+
+     location / {
+         try_files \$uri \$uri/ =404;
      }
  }" > "$NGINX_SITES_AVAILABLE_FILE" || _die "Couldn't write to file: ${NGINX_SITES_AVAILABLE_FILE}"
 
